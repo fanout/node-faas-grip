@@ -1,0 +1,33 @@
+{
+    "name": "faas-grip",
+    "version": "1.0.0",
+    "author": "Fanout, Inc. <info@fanout.io>",
+    "description": "FaaS GRIP Library",
+    "contributors": [
+        {
+            "name": "Justin Karneges",
+            "email": "justin@fanout.io"
+        }
+    ],
+    "main": "./lib/faas-grip",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/fanout/node-faas-grip.git"
+    },
+    "readmeFilename": "README.md",
+    "keywords": [
+        "grip",
+        "fanout",
+        "fanoutpub",
+        "realtime",
+        "push",
+        "pubcontrol",
+        "publish",
+        "faas"
+    ],
+    "dependencies": {
+        "grip": "1.2.x",
+	"jspack": "0.x"
+    },
+    "license": "MIT"
+}
