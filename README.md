@@ -75,7 +75,7 @@ exports.handler = function (event, context, callback) {
 
         if (message.startsWith('/nick ')) {
             var nick = message.substring(6);
-            ws.meta['nick'] = nick;
+            ws.meta.nick = nick;
             ws.send('nickname set to [' + nick + ']');
         } else {
             // send the message to all clients
