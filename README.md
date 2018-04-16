@@ -99,7 +99,7 @@ To serve an HTTP streaming connection, respond with `Grip-Hold` and `Grip-Channe
 
 ```js
 exports.handler = function (event, context, callback) {
-    callback({
+    callback(null, {
         statusCode: 200,
         headers: {
             'Content-Type': 'text/plain',
@@ -128,7 +128,7 @@ To hold a request open as a long-polling request, respond with `Grip-Hold` and `
 
 ```js
 exports.handler = function (event, context, callback) {
-    callback({
+    callback(null, {
         statusCode: 200,
         headers: {
             'Content-Type': 'text/plain',
