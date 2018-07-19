@@ -1,0 +1,8 @@
+{
+  "name": "lambda-chat",
+  "version": "0.0.1",
+  "author": "Fanout, Inc. <info@fanout.io>",
+  "dependencies": {
+    "faas-grip": "^1.0.1"
+  }
+}
