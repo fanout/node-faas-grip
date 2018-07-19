@@ -67,7 +67,7 @@ var ws = faasGrip.lambdaGetWebSocket(event);
 When using Fly, call `getWebSocket` with the incoming `Request` and it'll return a `WebSocketContext` object:
 
 ```js
-var ws = await faasGrip.getWebSocket(event);
+var ws = await faasGrip.getWebSocket(event.request);
 ```
 
 Note that unlike `lambdaGetWebSocket`, the `getWebSocket` function returns a promise (which you can await on in order to handle).
