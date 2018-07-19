@@ -80,7 +80,7 @@ exports.handler = function (event, context, callback) {
         } else {
             // send the message to all clients
             var nick = ws.meta.nick || 'anonymous';
-            faasGrip.publish(
+            await faasGrip.publish(
                 'room',
                 new grip.WebSocketMessageFormat(nick + ': ' + message)
             );
@@ -119,7 +119,7 @@ To publish data:
 var grip = require('grip');
 var faasGrip = require('faas-grip');
 
-faasGrip.publish('mychannel', new grip.HttpStreamFormat('some data\n'));
+await faasGrip.publish('mychannel', new grip.HttpStreamFormat('some data\n'));
 ```
 
 ## HTTP long-polling
@@ -148,7 +148,7 @@ To publish data:
 var grip = require('grip');
 var faasGrip = require('faas-grip');
 
-faasGrip.publish('mychannel', new grip.HttpResponseFormat('some data\n'));
+await faasGrip.publish('mychannel', new grip.HttpResponseFormat('some data\n'));
 ```
 
 # Resources
