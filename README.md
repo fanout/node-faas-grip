@@ -4,9 +4,9 @@ Author: Justin Karneges <justin@fanout.io>
 
 Function-as-a-service backends are not well-suited for handling long-lived connections, such as HTTP streams or WebSockets, because the function invocations are meant to be short-lived. The FaaS GRIP library makes it easy to delegate long-lived connection management to [Fanout Cloud](https://fanout.io/cloud/). This way, backend functions only need to be invoked when there is connection activity, rather than having to run for the duration of each connection.
 
-This library is intended for use with AWS Lambda and AWS API Gateway. Support for other FaaS backends may be added in the future.
+This library is intended for use with [AWS Lambda](https://aws.amazon.com/lambda/) (with AWS API Gateway) or [Fly](https://fly.io/). Support for other FaaS backends may be added in the future.
 
-# Setup
+## Setup for Lambda
 
 Install this module:
 
@@ -26,19 +26,55 @@ Finally, edit the Fanout Cloud domain origin server (SSL) to point to the host a
 
 Now whenever an HTTP request or WebSocket connection is made to your Fanout Cloud domain, your Lambda function will be able to control it.
 
-# Usage
+## Setup for Fly
 
-## WebSockets
+Create a `gripUrl` variable in `.fly.secrets.yml` containing your Fanout Cloud settings, of the form:
 
-Fanout Cloud converts incoming WebSocket connection activity into a series of HTTP requests to your backend. The requests are formatted using WebSocket-over-HTTP protocol, which this library will parse for you. Call `lambdaGetWebSocket` with the incoming Lambda event and it'll return a `WebSocketContext` object:
+```yaml
+gripUrl: https://api.fanout.io/realm/your-realm?iss=your-realm&key=base64:your-realm-key
+```
+
+Load the secret value in your `.fly.yml`:
+
+```yaml
+config:
+  gripUrl:
+    fromSecret: gripUrl
+```
+
+Early in your application code, set the `GRIP_URL` environment variable to its value:
+
+```js
+process.env.GRIP_URL = app.config.gripUrl;
+```
+
+Then, edit the Fanout Cloud domain origin server to point to the host and port of the Fly application (e.g. `{your-app}.edgeapp.net:80`).
+
+Now whenever an HTTP request or WebSocket connection is made to your Fanout Cloud domain, your Fly application will be able to control it.
+
+## Usage
+
+### WebSockets
+
+Fanout Cloud converts incoming WebSocket connection activity into a series of HTTP requests to your backend. The requests are formatted using WebSocket-over-HTTP protocol, which this library will parse for you.
+
+When using Lambda, call `lambdaGetWebSocket` with the incoming Lambda event and it'll return a `WebSocketContext` object:
 
 ```js
 var ws = faasGrip.lambdaGetWebSocket(event);
 ```
 
+When using Fly, call `getWebSocket` with the incoming `Request` and it'll return a `WebSocketContext` object:
+
+```js
+var ws = await faasGrip.getWebSocket(event);
+```
+
+Note that unlike `lambdaGetWebSocket`, the `getWebSocket` function returns a promise (which you can await on in order to handle).
+
 The `WebSocketContext` is a pseudo-socket object. You can call methods on it such as `accept()`, `send()`, `recv()`, and `close()`.
 
-For example, here's a chat-like service that accepts all connection requests, and any messages received are broadcasted out. Clients can choose a nickname by sending `/nick <name>`.
+For example, here's a chat-like service for Lambda that accepts all connection requests, and any messages received are broadcasted out. Clients can choose a nickname by sending `/nick <name>`.
 
 ```js
 var grip = require('grip');
@@ -91,11 +127,30 @@ exports.handler = function (event, context, callback) {
 };
 ```
 
+To do the same on Fly, change how the request and response parts are handled:
+
+```js
+var grip = require('grip');
+var faasGrip = require('faas-grip');
+
+process.env.GRIP_URL = app.config.gripUrl;
+
+addEventListener('fetch', function (event) {
+    var ws = await faasGrip.getWebSocket(event.request);
+
+    // ... inner websocket handling code here
+
+    event.respondWith(ws.toResponse());
+})
+```
+
 The while loop is deceptive. It looks like it's looping for the lifetime of the WebSocket connection, but what it's really doing is looping through a batch of WebSocket messages that was just received via HTTP. Often this will be one message, and so the loop performs one iteration and then exits. Similarly, the `ws` object only exists for the duration of the handler invocation, rather than for the lifetime of the connection as you might expect. It may look like socket code, but it's all an illusion. :tophat:
 
-## HTTP streaming
+Note: it's important that your function doesn't finish before `publish` has also finished. An easy way to handle this is to await the `publish` call.
 
-To serve an HTTP streaming connection, respond with `Grip-Hold` and `Grip-Channel` headers:
+### HTTP streaming
+
+To serve an HTTP streaming connection, respond with `Grip-Hold` and `Grip-Channel` headers. Here's an example for Lambda:
 
 ```js
 exports.handler = function (event, context, callback) {
@@ -122,9 +177,9 @@ var faasGrip = require('faas-grip');
 await faasGrip.publish('mychannel', new grip.HttpStreamFormat('some data\n'));
 ```
 
-## HTTP long-polling
+### HTTP long-polling
 
-To hold a request open as a long-polling request, respond with `Grip-Hold` and `Grip-Channel` headers:
+To hold a request open as a long-polling request, respond with `Grip-Hold` and `Grip-Channel` headers. Here's an example for Lambda:
 
 ```js
 exports.handler = function (event, context, callback) {
