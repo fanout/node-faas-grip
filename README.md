@@ -33,7 +33,7 @@ Now whenever an HTTP request or WebSocket connection is made to your Fanout Clou
 Fanout Cloud converts incoming WebSocket connection activity into a series of HTTP requests to your backend. The requests are formatted using WebSocket-over-HTTP protocol, which this library will parse for you. Call `lambdaGetWebSocket` with the incoming Lambda event and it'll return a `WebSocketContext` object:
 
 ```js
-var ws = faas_grip.lambdaGetWebSocket(event);
+var ws = faasGrip.lambdaGetWebSocket(event);
 ```
 
 The `WebSocketContext` is a pseudo-socket object. You can call methods on it such as `accept()`, `send()`, `recv()`, and `close()`.
@@ -42,12 +42,12 @@ For example, here's a chat-like service that accepts all connection requests, an
 
 ```js
 var grip = require('grip');
-var faas_grip = require('faas-grip');
+var faasGrip = require('faas-grip');
 
 exports.handler = function (event, context, callback) {
     var ws;
     try {
-        ws = faas_grip.lambdaGetWebSocket(event);
+        ws = faasGrip.lambdaGetWebSocket(event);
     } catch (err) {
         callback(null, {
             statusCode: 400,
@@ -80,7 +80,7 @@ exports.handler = function (event, context, callback) {
         } else {
             // send the message to all clients
             var nick = ws.meta.nick || 'anonymous';
-            faas_grip.publish(
+            faasGrip.publish(
                 'room',
                 new grip.WebSocketMessageFormat(nick + ': ' + message)
             );
@@ -117,9 +117,9 @@ To publish data:
 
 ```js
 var grip = require('grip');
-var faas_grip = require('faas-grip');
+var faasGrip = require('faas-grip');
 
-faas_grip.publish('mychannel', new grip.HttpStreamFormat('some data\n'));
+faasGrip.publish('mychannel', new grip.HttpStreamFormat('some data\n'));
 ```
 
 ## HTTP long-polling
@@ -146,9 +146,9 @@ To publish data:
 
 ```js
 var grip = require('grip');
-var faas_grip = require('faas-grip');
+var faasGrip = require('faas-grip');
 
-faas_grip.publish('mychannel', new grip.HttpResponseFormat('some data\n'));
+faasGrip.publish('mychannel', new grip.HttpResponseFormat('some data\n'));
 ```
 
 # Resources
